@@ -1,5 +1,5 @@
 # UL25
-Exercises for the course "Unsupervised Learning" @ UniTs. 
+Exercises for the course "Unsupervised Learning" @ University of Trieste, Italy. 
 
 - Teacher prof. Alejandro Rodriguez Garcia.  
 - Labs by Francesco Tomba (francesco.tomba@phd.units.it)
