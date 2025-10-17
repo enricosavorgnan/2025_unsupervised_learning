@@ -10,4 +10,6 @@ Lab exercises tracks:
 
 - [Lab 2](lab2.pdf) solution [here](Notebooks/Lab2-PCA.ipynb)
 
-- [Lab 3](lab3.pdf)
+- [Lab 3](lab3.pdf) solution [here](Notebooks/Lab3-Isomap.ipynb)
+
+- [Lab 4](lab4.pdf) 
