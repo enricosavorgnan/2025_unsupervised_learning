@@ -24,10 +24,13 @@ def my_pca(x, dim=None):
     sorted_eigenvecs = eigenvecs[:, sorted_indices]
 
     if dim is None:
-        px.scatter(x=np.arange(1, len(sorted_eigenvals)+1), y=sorted_eigenvals, title="Eigenvalues", labels={"x": "Index", "y": "Eigenvalue"}, width=800, height=800).show()
+        px.scatter(x=np.arange(1, len(sorted_eigenvals)+1), y=np.log(sorted_eigenvals), title="Eigenvalues", labels={"x": "Index", "y": "Eigenvalue"}, width=800, height=800).show()
 
         time.sleep(2)
-        dim = int(float(input("Enter the number of dimensions to reduce to: ")))
+        try:
+            dim = int(float(input("Enter the number of dimensions to reduce to: ")))
+        except ValueError:
+            dim = 2
 
     # select the top d eigenvectors
     selected_eigenvecs =  sorted_eigenvecs[:, :dim]
@@ -168,3 +171,68 @@ def my_kpca(x, dim=None, kernel_type='rbf', kernel_param=None):
 
     return x_kpca, dim, selected_eigenvecs
 
+
+# ---------------------------------------------------- #
+# ---------------------. Two-NN ---------------------- #
+# ---------------------------------------------------- #
+
+def my_two_nn(data):
+    n = data.shape[0]
+
+    neigh = NearestNeighbors(n_neighbors=3).fit(data)
+    distances, indices = neigh.kneighbors(data)
+    print(indices.shape)
+    print(indices[0])
+    mu = distances[:, 2] / (distances[:, 1] + 1e-8)
+    d = n / np.sum(np.log(mu))
+
+    return d
+
+
+# ---------------------------------------------------- #
+# ----------.Histogram Density Estimation ------------ #
+# ---------------------------------------------------- #
+
+def my_histogram_density_estimation(data, h=None):
+    x0 = np.min(data)
+    x1 = np.max(data)
+    n = data.shape[0]
+    if h is None:
+        iqr = np.quantile(data, 0.75) - np.quantile(data, 0.25)
+        h = 2 * iqr / np.cbrt(n)
+
+    n_bins = int(np.ceil((x1 - x0) / h))
+
+    print(n, h, x0, x1, n_bins)
+    counts = np.array([0]*n_bins)
+
+    for i in range(n_bins):
+        for data_point in data:
+            if x0+i*h <= data_point < x0+ (i + 1)*h:
+                counts[i] += 1
+    print(counts)
+    probs = counts/n
+    return probs, x0, x1, h
+
+
+# ---------------------------------------------------- #
+# -----------..Kernel Density Estimation ------------- #
+# ---------------------------------------------------- #
+
+def my_kernel_density_estimation(data, h=None, grid_points=100):
+    n = data.shape[0]
+    data = np.sort(data)
+    if h is None:
+        iqr = np.quantile(data, 0.75) - np.quantile(data, 0.25)
+        sd = np.sqrt(np.var(data))
+        h = 0.9 * np.minimum(sd, iqr/1.34)* n**(-.2)
+
+    print(n, h)
+    # Create grid for evaluation
+    x_grid = np.linspace(np.min(data)-.5*np.sqrt(np.var(data)), np.max(data)+.5*np.sqrt(np.var(data)), grid_points)
+
+    probs = np.array([0.]*len(x_grid))
+    for i, x in enumerate(x_grid):
+        probs[i] = np.sum(np.exp(-.5*((x - data)/h)**2)) / n / h / np.sqrt(2 * np.pi)
+
+    return probs, h, x_grid
